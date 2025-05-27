@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>STUDIO NAILS BY LAURA SÁNCHEZ - Agenda</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #ffe4ec; /* rosa claro */
+    margin: 0;
+    padding: 0;
+    color: #660033;
+  }
+  header {
+    background: #ff6699;
+    padding: 20px;
+    text-align: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+  }
+  main {
+    max-width: 600px;
+    margin: 30px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(255,102,153,0.4);
+  }
+  label {
+    display: block;
+    margin: 15px 0 5px;
+  }
+  input, select, button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ff6699;
+    font-size: 1rem;
+  }
+  button {
+    background: #ff3399;
+    color: white;
+    font-weight: bold;
+    margin-top: 20px;
+    cursor: pointer;
+    border: none;
+  }
+  button:hover {
+    background: #e62e8c;
+  }
+  .agenda-list {
+    margin-top: 30px;
+  }
+  .agenda-list h2 {
+    text-align: center;
+    color: #cc0066;
+  }
+  .appointment {
+    background: #ffccde;
+    border: 1px solid #ff6699;
+    margin: 8px 0;
+    padding: 8px;
+    border-radius: 10px;
+  }
+  /* Login */
+  #login-section {
+    max-width: 300px;
+    margin: 40px auto;
+    background: #ffe4ec;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgba(255,102,153,0.3);
+  }
+  #login-section h2 {
+    text-align: center;
+    color: #660033;
+  }
+  .hidden {
+    display: none;
+  }
+  .error {
+    color: red;
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  STUDIO NAILS BY LAURA SÁNCHEZ
+</header>
+
+<div id="login-section">
+  <h2>Ingreso Administrativo</h2>
+  <label for="username">Usuario:</label>
+  <input type="text" id="username" placeholder="Usuario" />
+  <label for="password">Contraseña:</label>
+  <input type="password" id="password" placeholder="Contraseña" />
+  <button id="login-btn">Ingresar</button>
+  <div class="error" id="login-error"></div>
+</div>
+
+<main class="hidden" id="main-app">
+  <h2>Agenda de Citas</h2>
+  <form id="appointment-form">
+    <label for="date">Fecha:</label>
+    <input type="date" id="date" required />
+
+    <label for="time">Hora:</label>
+    <select id="time" required>
+      <option value="">Selecciona una hora</option>
+      <option>09:00 AM</option>
+      <option>10:00 AM</option>
+      <option>11:00 AM</option>
+      <option>12:00 PM</option>
+      <option>01:00 PM</option>
+      <option>02:00 PM</option>
+      <option>03:00 PM</option>
+      <option>04:00 PM</option>
+      <option>05:00 PM</option>
+    </select>
+
+    <label for="client-name">Nombre del Cliente:</label>
+    <input type="text" id="client-name" placeholder="Nombre completo" required />
+
+    <button type="submit">Reservar Cita</button>
+  </form>
+
+  <div class="agenda-list" id="agenda-list">
+    <h2>Citas Reservadas</h2>
+    <div id="appointments-container">
+      <!-- Aquí se mostrarán las citas -->
+    </div>
+  </div>
+</main>
+
+<script>
+  // Usuarios permitidos para administrar
+  const users = [
+    { username: "admin1", password: "1234" },
+    { username: "admin2", password: "5678" },
+  ];
+
+  const loginSection = document.getElementById('login-section');
+  const mainApp = document.getElementById('main-app');
+  const loginBtn = document.getElementById('login-btn');
+  const loginError = document.getElementById('login-error');
+
+  loginBtn.addEventListener('click', () => {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    const userFound = users.find(u => u.username === username && u.password === password);
+    if(userFound){
+      loginError.textContent = "";
+      loginSection.classList.add('hidden');
+      mainApp.classList.remove('hidden');
+      loadAppointments();
+    } else {
+      loginError.textContent = "Usuario o contraseña incorrectos.";
+    }
+  });
+
+  // Manejo de citas
+  const appointmentForm = document.getElementById('appointment-form');
+  const appointmentsContainer = document.getElementById('appointments-container');
+
+  function saveAppointments(appointments) {
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+  }
+
+  function loadAppointments() {
+    const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+    displayAppointments(appointments);
+  }
+
+  function displayAppointments(appointments) {
+    appointmentsContainer.innerHTML = "";
+    if(appointments.length === 0){
+      appointmentsContainer.innerHTML = "<p>No hay citas reservadas.</p>";
+      return;
+    }
+    appointments.forEach((app, i) => {
+      const div = document.createElement('div');
+      div.classList.add('appointment');
+      div.innerHTML = `
+        <strong>Fecha:</strong> ${app.date} <br />
+        <strong>Hora:</strong> ${app.time} <br />
+        <strong>Cliente:</strong> ${app.clientName} <br />
+        <button onclick="deleteAppointment(${i})" style="margin-top:8px; background:#cc0052; border:none; color:white; padding:5px 10px; border-radius:6px; cursor:pointer;">Eliminar</button>
+      `;
+      appointmentsContainer.appendChild(div);
+    });
+  }
+
+  function deleteAppointment(index) {
+    let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+    appointments.splice(index, 1);
+    saveAppointments(appointments);
+    displayAppointments(appointments);
+  }
+
+  appointmentForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+    const clientName = document.getElementById('client-name').value.trim();
+
+    if(!date || !time || !clientName){
+      alert("Por favor, completa todos los campos.");
+      return;
+    }
+
+    let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+
+    // Validar si ya hay cita en esa fecha y hora
+    const conflict = appointments.find(app => app.date === date && app.time === time);
+    if(conflict){
+      alert("Ya existe una cita reservada para esa fecha y hora.");
+      return;
+    }
+
+    appointments.push({ date, time, clientName });
+    saveAppointments(appointments);
+    displayAppointments(appointments);
+
+    appointmentForm.reset();
+  });
+</script>
+
+</body>
+</html>
